@@ -10,7 +10,7 @@ Whether it's focusing on specific appliance categories, incorporating real-time 
 
 2. **Optimize energy management:** Real-time disaggregation data serves as a foundation for smart homes and appliances, enabling dynamic load balancing and cost-saving energy scheduling.
 
-3. **Advance the field of disaggregation:** Through our exploration of [your unique approach], we aim to contribute to the development of more accurate, efficient, and adaptable disaggregation techniques.
+3. **Advance the field of disaggregation:** Through our exploration, we aim to contribute to the development of more accurate, efficient, and adaptable disaggregation techniques.
 
 ## Getting Started
 
