@@ -35,6 +35,7 @@ print("Random Forest Weekly RMSE:", rf_weekly_rmse)
 
 normalized_data.index = pd.to_datetime(normalized_data.index)
 
+#plots
 plt.figure(figsize=(12, 6))
 plt.plot(normalized_data[weekly_feature_column], label='Daily Usage')
 plt.title('Daily Energy Usage')
