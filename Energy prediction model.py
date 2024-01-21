@@ -33,10 +33,8 @@ print("ARIMA Weekly RMSE:", arima_weekly_rmse)
 print("Random Forest Weekly MAE:", rf_weekly_mae)
 print("Random Forest Weekly RMSE:", rf_weekly_rmse)
 
-# Ensure that 'normalized_data' index is a datetime for proper plotting
 normalized_data.index = pd.to_datetime(normalized_data.index)
 
-# Daily Usage Chart
 plt.figure(figsize=(12, 6))
 plt.plot(normalized_data[weekly_feature_column], label='Daily Usage')
 plt.title('Daily Energy Usage')
