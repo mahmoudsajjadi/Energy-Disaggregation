@@ -1,4 +1,5 @@
 import pandas as pd
+import sns as sns
 from sklearn.model_selection import train_test_split
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.ensemble import RandomForestRegressor
@@ -60,4 +61,52 @@ plt.title('Monthly Energy Usage')
 plt.xlabel('Month')
 plt.ylabel('Energy Consumption')
 plt.legend()
+plt.show()
+
+normalized_data['DayOfWeek'] = normalized_data.index.dayofweek
+normalized_data['Month'] = normalized_data.index.month
+
+for lag in range(1, 4):
+    normalized_data[f'Lag_{lag}'] = normalized_data[weekly_feature_column].shift(lag)
+normalized_data.dropna(inplace=True)
+
+normalized_data['Rolling_Mean'] = normalized_data[weekly_feature_column].rolling(window=3).mean()
+normalized_data['Rolling_Std'] = normalized_data[weekly_feature_column].rolling(window=3).std()
+normalized_data.dropna(inplace=True)
+
+print("Descriptive Statistics:")
+print(normalized_data.describe())
+
+print("\nKey Insights:")
+
+plt.figure(figsize=(12, 6))
+plt.plot(test_weekly[weekly_feature_column], label='Actual Usage')
+plt.plot(test_weekly.index, arima_weekly_forecast, label='ARIMA Predicted Usage', alpha=0.7)
+plt.title('Weekly Energy Usage: Actual vs ARIMA Predictions')
+plt.xlabel('Week')
+plt.ylabel('Energy Consumption')
+plt.legend()
+plt.show()
+
+plt.figure(figsize=(12, 6))
+plt.plot(test_weekly[weekly_feature_column], label='Actual Usage')
+plt.plot(test_weekly.index, rf_weekly_predictions, label='Random Forest Predicted Usage', alpha=0.7)
+plt.title('Weekly Energy Usage: Actual vs Random Forest Predictions')
+plt.xlabel('Week')
+plt.ylabel('Energy Consumption')
+plt.legend()
+plt.show()
+
+arima_residuals = test_weekly[weekly_feature_column] - arima_weekly_forecast
+
+plt.figure(figsize=(12, 6))
+plt.plot(arima_residuals)
+plt.title('ARIMA Model Residuals')
+plt.xlabel('Week')
+plt.ylabel('Residuals')
+plt.show()
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(normalized_data.corr(), annot=True, cmap='coolwarm')
+plt.title('Feature Correlation Matrix')
 plt.show()
