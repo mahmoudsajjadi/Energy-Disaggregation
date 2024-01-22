@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from math import sqrt
 import matplotlib.pyplot as plt
-#watashi wa
+#watashi wa americajin desu
 file_path = 'cleaned_normalized_energy_data.csv'
 normalized_data = pd.read_csv(file_path, index_col='Date', parse_dates=True)
 
