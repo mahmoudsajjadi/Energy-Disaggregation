@@ -1,12 +1,5 @@
 import os
 import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 from natsort import natsorted
 from matplotlib.patches import Patch
@@ -15,45 +8,23 @@ from matplotlib.patches import Patch
 test_house_number = 6
 
 # Load REDD dataset
-# dataset_folder = '/home/seyedmahmouds/Projects/Energy Disaggregation/Energy-Disaggregation/Datasets/REDD/'
 dataset_folder = './Datasets/REDD/'
-dataset_files = [f for f in os.listdir(dataset_folder) if f.endswith('.csv')]
-dataset_files = natsorted(dataset_files)
+dataset_files = natsorted([f for f in os.listdir(dataset_folder) if f.endswith('.csv')])
 redd_data = pd.concat([pd.read_csv(os.path.join(dataset_folder, file)) for file in dataset_files])
 
-# Iterate over the files and create separate DataFrames for each house
-house_data_dict = {}
-for file in dataset_files:
-    house_name = file.split('_')[1]  # Extract house name from file name
-    house_data_dict[house_name] = pd.read_csv(os.path.join(dataset_folder, file))
+# Function to load house data
+def load_house_data(file):
+    return pd.read_csv(os.path.join(dataset_folder, file))
 
-# Iterate over the remaining files and update common appliances
-common_appliances = set(pd.read_csv(os.path.join(dataset_folder, dataset_files[0]), nrows=1).columns[1:])
-all_appliances = set(pd.read_csv(os.path.join(dataset_folder, dataset_files[0]), nrows=1).columns[1:])
+# Load house data into a dictionary
+house_data_dict = {file.split('_')[1]: load_house_data(file) for file in dataset_files}
+
+# Extract common appliances
+common_appliances = set(house_data_dict[dataset_files[0].split('_')[1]].columns[1:])
+all_appliances = set(house_data_dict[dataset_files[0].split('_')[1]].columns[1:])
 for file in dataset_files[1:]:
-    file_path = os.path.join(dataset_folder, file)
-    current_columns = set(pd.read_csv(file_path, nrows=1).columns[1:])
-    common_appliances = common_appliances.intersection(current_columns)
-    all_appliances = all_appliances.union(current_columns)
-
-# Convert common_appliances to a list
-common_appliances = list(common_appliances)
-
-# Select columns for training and testing
-train_columns = common_appliances
-test_columns = ['main']
-
-# Create an empty dictionary to store DataFrames for each house
-train_data_dict = {}
-
-# Iterate over the files and read each one into the dictionary
-for file in dataset_files[:-1]:  # Exclude the test file
-    house_name = file.split('_')[1]  # Extract house name from file name
-    train_data_dict[house_name] = pd.read_csv(os.path.join(dataset_folder, file))
-
-# Filter data to include only selected columns
-train_data = pd.concat([pd.read_csv(os.path.join(dataset_folder, file))[train_columns] for file in dataset_files[:-1]])
-test_data = pd.read_csv(os.path.join(dataset_folder, dataset_files[-1]))[test_columns]
+    common_appliances &= set(load_house_data(file).columns[1:])
+    all_appliances |= set(load_house_data(file).columns[1:])
 
 # Define colors for appliances
 appliance_colors = {
@@ -86,22 +57,16 @@ legend_handles = [Patch(facecolor=color, edgecolor='black', label=label) for lab
 
 # Iterate through house data
 for idx, (house_name, house_data) in enumerate(house_data_dict.items()):
-    existing_appliances = set(house_data.columns[1:])  # Get existing appliances in the house
+    existing_appliances = set(house_data.columns[1:])
     missing_appliances = appliance_colors.keys() - existing_appliances
 
     # Add missing appliances with zeros if needed
     if missing_appliances:
         house_data = house_data.reindex(columns=appliance_colors.keys(), fill_value=0)
 
-    # Now you can safely calculate means without KeyError
+    # Calculate means
     appliance_means = house_data[list(appliance_colors.keys())].mean().sort_values(ascending=False)
     main_mean = house_data['main'].mean()
-
-    # Print statistics
-    print(f"--- House {house_name} ---")
-    print(f"Appliance Means:")
-    print(appliance_means)
-    print(f"Main Power Mean: {main_mean:.2f}")
 
     # Visualize appliance means with bar chart
     row = idx // num_cols
@@ -116,10 +81,50 @@ for idx, (house_name, house_data) in enumerate(house_data_dict.items()):
     ax.set_title(f"Mean Power Consumption of Appliances in House {house_name}")
     ax.tick_params(axis='x', which='both', bottom=False, labelbottom=False)  # Hide x-axis labels
 
-# Ensure tight layout
+# Ensure tight layout for the first plot
 plt.tight_layout()
 
-# Display custom legend outside the subplots
+# Display custom legend outside the subplots for the first plot
 plt.legend(handles=legend_handles, labels=legend_labels, loc='upper right', bbox_to_anchor=(1.1, 1), title="Appliances", fancybox=True, shadow=True, ncol=1)
+
+# Create a new figure and axes for the second plot
+fig2, axes2 = plt.subplots(num_rows, num_cols, figsize=(15, 10))
+
+# Flatten axes if necessary
+if num_houses == 1:
+    axes2 = [axes2]
+
+# Iterate through house data for common appliances
+for idx, (house_name, house_data) in enumerate(house_data_dict.items()):
+    existing_appliances = set(house_data.columns[1:])
+    common_existing_appliances = existing_appliances.intersection(common_appliances)
+
+    # If there are common appliances present in this house's data
+    if common_existing_appliances:
+        # Filter data to include only common appliances
+        house_data_common = house_data[common_existing_appliances]
+
+        # Calculate means
+        appliance_means = house_data_common.mean().sort_values(ascending=False)
+        main_mean = house_data['main'].mean()  # Still calculate main mean for information
+
+        # Visualize appliance means with bar chart for common appliances
+        row = idx // num_cols
+        col = idx % num_cols
+        ax = axes2[row][col]
+
+        # Assign colors to bars using the original color dictionary
+        colors = [appliance_colors.get(appliance, "gray") for appliance in appliance_means.index]
+
+        ax.bar(appliance_means.index, appliance_means.values, color=colors)
+        ax.set_ylabel("Mean Power Consumption")
+        ax.set_title(f"Mean Power Consumption of Common Appliances in House {house_name}")
+        ax.tick_params(axis='x', which='both', bottom=False, labelbottom=False)  # Hide x-axis labels
+
+# Ensure tight layout for the second plot
+plt.tight_layout()
+
+# Display custom legend outside the subplots for the second plot
+plt.legend(handles=legend_handles, labels=legend_labels, loc='upper right', bbox_to_anchor=(1.1, 1), title="Common Appliances", fancybox=True, shadow=True, ncol=1)
 
 plt.show()
