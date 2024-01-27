@@ -101,8 +101,11 @@ for idx, (house_name, house_data) in enumerate(house_data_dict.items()):
 
     # If there are common appliances present in this house's data
     if common_existing_appliances:
+        # Convert set to list for indexing
+        common_existing_appliances_list = list(common_existing_appliances)
+
         # Filter data to include only common appliances
-        house_data_common = house_data[common_existing_appliances]
+        house_data_common = house_data[common_existing_appliances_list]
 
         # Calculate means
         appliance_means = house_data_common.mean().sort_values(ascending=False)
@@ -120,6 +123,7 @@ for idx, (house_name, house_data) in enumerate(house_data_dict.items()):
         ax.set_ylabel("Mean Power Consumption")
         ax.set_title(f"Mean Power Consumption of Common Appliances in House {house_name}")
         ax.tick_params(axis='x', which='both', bottom=False, labelbottom=False)  # Hide x-axis labels
+
 
 # Ensure tight layout for the second plot
 plt.tight_layout()
