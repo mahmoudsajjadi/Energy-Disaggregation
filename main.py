@@ -1,8 +1,14 @@
 import os
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from natsort import natsorted
 from matplotlib.patches import Patch
+import torch
+import torch.optim as optim
+import torch.nn as nn
+from Models.neural_network import Net
+
 
 # Specify the test house number
 test_house_number = 6
@@ -128,3 +134,50 @@ plt.tight_layout()
 plt.legend(handles=legend_handles, labels=legend_labels, loc='upper right', bbox_to_anchor=(1.1, 1), title="Common Appliances", fancybox=True, shadow=True, ncol=1)
 
 plt.show()
+
+
+
+
+############### Model training
+
+# Define legend labels and handles
+legend_labels = list(appliance_colors.keys())
+legend_handles = [Patch(facecolor=color, edgecolor='black', label=label) for label, color in appliance_colors.items()]
+
+# Create the neural network instance
+input_size = len(all_appliances)  # Input size is the number of all appliances
+hidden_size = 100
+output_size = len(common_appliances)  # Output size is the number of common appliances
+net = Net(input_size, hidden_size, output_size)
+
+# Define loss function and optimizer
+criterion = nn.MSELoss()
+optimizer = optim.SGD(net.parameters(), lr=0.01)
+
+# Function to preprocess data for neural network
+def preprocess_data(data):
+    # Assuming data is a DataFrame with appliance means
+    return torch.tensor(data.values.astype(np.float32))
+
+# Train the neural network
+for house_name, house_data in house_data_dict.items():
+    # Preprocess input and output data
+    input_data = preprocess_data(house_data[common_appliances])
+    output_data = preprocess_data(house_data[common_appliances])
+
+    # Training loop
+    optimizer.zero_grad()
+    outputs = net(input_data.unsqueeze(0))  # Add batch dimension
+    loss = criterion(outputs, output_data.unsqueeze(0))  # Add batch dimension
+    loss.backward()
+    optimizer.step()
+
+# Test the neural network
+test_house_data = house_data_dict[f'house{test_house_number}']
+input_data_test = preprocess_data(test_house_data['main'])
+output_data_pred = net(input_data_test.unsqueeze(0))  # Add batch dimension
+
+# Convert output tensor to DataFrame with appliance means
+output_df_pred = pd.DataFrame(output_data_pred.squeeze().detach().numpy(), columns=common_appliances)
+print("Predicted Appliance Means:")
+print(output_df_pred)
