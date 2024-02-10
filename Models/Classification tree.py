@@ -1,5 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report
@@ -41,13 +40,3 @@ y_pred = classifier.predict(X_test)
 new_accuracy = accuracy_score(y_test, y_pred)
 print(f"New accuracy: {new_accuracy}")
 print(f"New Classification Report:\n{classification_report(y_test, y_pred)}")
-
-plt.figure(figsize=(14, 7))
-plt.plot(weekly_data['week'], weekly_data['main'], label='Weekly Energy Consumption', marker='o')
-plt.xlabel('Week')
-plt.ylabel('Energy Consumption')
-plt.title('Weekly Energy Consumption Trends')
-plt.legend()
-plt.grid(True)
-plt.xticks(rotation=45)
-plt.show()
