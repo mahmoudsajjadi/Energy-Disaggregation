@@ -376,7 +376,7 @@ for i in range(len(data) - sequence_length):
 # Define model parameters
 input_size = sequence_length
 hidden_size = 128
-num_layers = 1
+num_layers = 2
 
 # Initialize model, loss function, and optimizer
 model = LSTMModel(input_size, hidden_size, num_layers)
