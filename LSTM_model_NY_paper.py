@@ -311,7 +311,7 @@ criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Train the model for each home
-num_epochs = 100
+num_epochs = 500
 
 
 predicted_consumptions = {}
