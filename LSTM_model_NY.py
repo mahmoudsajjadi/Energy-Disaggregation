@@ -100,7 +100,7 @@ daily_consumption_by_home = {}
 refrigerator_home = {}
 
 varible_to_pridict = 'total_consumption'
-varible_to_pridict = 'car1'
+# varible_to_pridict = 'car1'
 
 for home_id, df in dfs_by_home_id.items():
     df[['date', 'time']] = df['local_15min'].str.split(" ", expand=True)
@@ -282,7 +282,7 @@ criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Train the model
-num_epochs = 25
+num_epochs = 250
 for epoch in range(num_epochs):
     if epoch % 10 == 0:
         print(epoch)
